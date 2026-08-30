@@ -4,37 +4,54 @@
 // =========================================================
 //
 // This file controls:
+//
 // 1. Mobile navigation
 // 2. Section fade-in animation
 // 3. Gallery Photos / Videos tabs
-// 4. Independent Before / After carousels
+// 4. Before / After carousels
 //
-// The goal is to keep each feature separate and easy to
-// understand and modify later.
+// Everything is separated into sections so the code is
+// easier to understand and maintain.
 // =========================================================
+
 
 
 /* =========================================================
    1. MOBILE MENU
    ========================================================= */
 
-// Find the mobile menu button and navigation menu.
+// Find the hamburger button and navigation menu.
 const menuToggle = document.getElementById("menu-toggle");
 const navMenu = document.getElementById("nav-menu");
 
 
-// Only run the menu code if both elements exist.
+// Only run this code if both elements exist.
 if (menuToggle && navMenu) {
 
-    // Open / close the mobile navigation.
-    menuToggle.addEventListener("click", () => {
+    // -----------------------------------------------------
+    // OPEN / CLOSE MENU
+    // -----------------------------------------------------
+    //
+    // Clicking the hamburger toggles the mobile menu.
+    //
+    menuToggle.addEventListener("click", (event) => {
+
+        // Prevent this click from being treated as an
+        // outside click by the document listener below.
+        event.stopPropagation();
 
         navMenu.classList.toggle("active");
 
     });
 
 
-    // Close the mobile menu after selecting a navigation link.
+    // -----------------------------------------------------
+    // CLOSE MENU AFTER CLICKING A NAVIGATION LINK
+    // -----------------------------------------------------
+    //
+    // Example:
+    // Tap "Services" → menu closes → page moves to Services.
+    //
     navMenu.querySelectorAll("a").forEach((link) => {
 
         link.addEventListener("click", () => {
@@ -46,8 +63,38 @@ if (menuToggle && navMenu) {
     });
 
 
-    // If the browser becomes wider than the mobile breakpoint,
-    // make sure the mobile menu is closed.
+    // -----------------------------------------------------
+    // CLOSE MENU WHEN CLICKING OUTSIDE
+    // -----------------------------------------------------
+    //
+    // This only closes the MOBILE navigation menu.
+    //
+    // It does NOT affect the gallery or carousels.
+    //
+    document.addEventListener("click", (event) => {
+
+        const clickedInsideMenu = navMenu.contains(event.target);
+        const clickedHamburger = menuToggle.contains(event.target);
+
+
+        // If the user clicked somewhere other than the
+        // menu or hamburger, close the menu.
+        if (!clickedInsideMenu && !clickedHamburger) {
+
+            navMenu.classList.remove("active");
+
+        }
+
+    });
+
+
+    // -----------------------------------------------------
+    // CLOSE MENU WHEN SWITCHING TO DESKTOP
+    // -----------------------------------------------------
+    //
+    // If the screen becomes wider than 900px, make sure
+    // the mobile menu is no longer open.
+    //
     window.addEventListener("resize", () => {
 
         if (window.innerWidth > 900) {
@@ -61,13 +108,19 @@ if (menuToggle && navMenu) {
 }
 
 
+
 /* =========================================================
    2. SECTION FADE-IN ANIMATION
    ========================================================= */
 
-// IntersectionObserver watches sections as they enter
-// the screen and adds the "visible" class.
+// IntersectionObserver detects when a section enters
+// the screen.
+//
+// When it does, we add the "visible" class.
+//
+// The CSS controls the actual animation.
 const fadeObserver = new IntersectionObserver(
+
     (entries) => {
 
         entries.forEach((entry) => {
@@ -76,8 +129,9 @@ const fadeObserver = new IntersectionObserver(
 
                 entry.target.classList.add("visible");
 
-                // Once the section has appeared, we don't need
-                // to keep watching it.
+
+                // Once the section has appeared, we no longer
+                // need to watch it.
                 fadeObserver.unobserve(entry.target);
 
             }
@@ -85,9 +139,11 @@ const fadeObserver = new IntersectionObserver(
         });
 
     },
+
     {
         threshold: 0.15
     }
+
 );
 
 
@@ -101,28 +157,46 @@ document.querySelectorAll("section").forEach((section) => {
 });
 
 
+
 /* =========================================================
    3. GALLERY TABS
    =========================================================
-
-   Clicking "Photos" displays the photo gallery.
-
-   Clicking "Videos" displays the video area.
-
-   IMPORTANT:
-   There is intentionally NO "click outside" behavior here.
-
-   Clicking outside the gallery will NOT collapse it.
-   ========================================================= */
+//
+// The gallery has two main tabs:
+//
+//     PHOTOS
+//     VIDEOS
+//
+// Clicking Photos shows the photo gallery.
+// Clicking Videos shows the video area.
+//
+// IMPORTANT:
+// There is NO "click outside gallery" code here.
+//
+// Therefore clicking outside the gallery will NOT collapse
+// the gallery.
+// ========================================================= */
 
 const galleryTabs = document.querySelectorAll(".gallery-tab");
 const galleryContents = document.querySelectorAll(".gallery-content");
 
 
-// Function used to switch between gallery tabs.
+// ---------------------------------------------------------
+// SWITCH GALLERY
+// ---------------------------------------------------------
+//
+// This function receives either:
+//
+//     "photos"
+//     "videos"
+//
+// and displays the appropriate gallery.
+// ---------------------------------------------------------
+
 function showGallery(galleryName) {
 
-    // Remove active state from every tab.
+
+    // Remove "active" from every tab.
     galleryTabs.forEach((tab) => {
 
         tab.classList.remove("active");
@@ -148,13 +222,15 @@ function showGallery(galleryName) {
     const selectedContent = document.getElementById(galleryName);
 
 
-    // Activate them if they exist.
+    // Activate the selected tab.
     if (selectedTab) {
 
         selectedTab.classList.add("active");
 
     }
 
+
+    // Show the selected gallery.
     if (selectedContent) {
 
         selectedContent.classList.add("active");
@@ -164,7 +240,10 @@ function showGallery(galleryName) {
 }
 
 
-// Give every gallery tab its click behavior.
+// ---------------------------------------------------------
+// GIVE EACH GALLERY TAB ITS CLICK FUNCTION
+// ---------------------------------------------------------
+
 galleryTabs.forEach((tab) => {
 
     tab.addEventListener("click", () => {
@@ -176,14 +255,15 @@ galleryTabs.forEach((tab) => {
 });
 
 
-/*
-   Optional default:
-
-   If no gallery tab is active when the page loads,
-   automatically show Photos.
-
-   This makes the gallery easier to use.
-*/
+// ---------------------------------------------------------
+// DEFAULT GALLERY
+// ---------------------------------------------------------
+//
+// If neither Photos nor Videos is active when the page
+// loads, automatically show Photos.
+//
+// This makes the gallery immediately usable.
+// ---------------------------------------------------------
 
 if (
     galleryTabs.length > 0 &&
@@ -195,52 +275,93 @@ if (
 }
 
 
+
 /* =========================================================
-   4. CAROUSELS
+   4. CAROUSEL SYSTEM
    =========================================================
-
-   Every .gallery-carousel gets its OWN carousel controller.
-
-   This is important because we now have:
-
-       BEFORE carousel
-              +
-       AFTER carousel
-
-   Clicking the Before arrows only changes Before.
-
-   Clicking the After arrows only changes After.
-   ========================================================= */
+//
+// This is designed to support MULTIPLE carousels.
+//
+// Currently you have:
+//
+//     BEFORE CAROUSEL
+//     AFTER CAROUSEL
+//
+// Each carousel operates independently.
+//
+// Clicking the Before arrows only changes Before.
+//
+// Clicking the After arrows only changes After.
+//
+// If you add another carousel later, it will work
+// automatically as long as it uses:
+//
+//     .gallery-carousel
+//     .carousel-slide
+//     .carousel-prev
+//     .carousel-next
+// ========================================================= */
 
 
 function initializeCarousel(carousel) {
 
-    // Find all slides inside this particular carousel.
-    const slides = carousel.querySelectorAll(".carousel-slide");
 
-    // Find this carousel's own buttons.
-    const previousButton =
-        carousel.querySelector(".carousel-prev");
+    // -----------------------------------------------------
+    // FIND THIS CAROUSEL'S SLIDES
+    // -----------------------------------------------------
+    //
+    // We search INSIDE this carousel.
+    //
+    // This is important because it prevents the Before
+    // carousel from controlling the After carousel.
+    //
+    const slides = carousel.querySelectorAll(
+        ".carousel-slide"
+    );
 
-    const nextButton =
-        carousel.querySelector(".carousel-next");
+
+    // Find this carousel's Previous button.
+    const previousButton = carousel.querySelector(
+        ".carousel-prev"
+    );
 
 
-    // A carousel without slides cannot function.
+    // Find this carousel's Next button.
+    const nextButton = carousel.querySelector(
+        ".carousel-next"
+    );
+
+
+    // -----------------------------------------------------
+    // SAFETY CHECK
+    // -----------------------------------------------------
+    //
+    // If there are no slides, there is nothing to control.
+    //
     if (slides.length === 0) {
+
         return;
+
     }
 
 
-    // Keep track of which picture is currently displayed.
+    // Keep track of the currently displayed slide.
     let currentSlide = 0;
 
 
-    // Show one particular slide.
+
+    /* -----------------------------------------------------
+       SHOW A SPECIFIC SLIDE
+    ----------------------------------------------------- */
+
     function showSlide(index) {
 
+
+        // Go through every slide.
         slides.forEach((slide, slideIndex) => {
 
+
+            // Only the selected slide gets "active".
             slide.classList.toggle(
                 "active",
                 slideIndex === index
@@ -251,43 +372,65 @@ function initializeCarousel(carousel) {
     }
 
 
-    // Move to the previous picture.
+
+    /* -----------------------------------------------------
+       PREVIOUS SLIDE
+    ----------------------------------------------------- */
+
     function showPreviousSlide() {
 
+
+        // Move backward one slide.
         currentSlide--;
 
-        // If we move before the first picture,
-        // go to the last picture.
+
+        // If we move before the first slide,
+        // jump to the last slide.
         if (currentSlide < 0) {
 
             currentSlide = slides.length - 1;
 
         }
 
+
+        // Display the new slide.
         showSlide(currentSlide);
 
     }
 
 
-    // Move to the next picture.
+
+    /* -----------------------------------------------------
+       NEXT SLIDE
+    ----------------------------------------------------- */
+
     function showNextSlide() {
 
+
+        // Move forward one slide.
         currentSlide++;
 
-        // If we move past the last picture,
-        // return to the first picture.
+
+        // If we move past the final slide,
+        // return to the first slide.
         if (currentSlide >= slides.length) {
 
             currentSlide = 0;
 
         }
 
+
+        // Display the new slide.
         showSlide(currentSlide);
 
     }
 
 
-    // Previous button.
+
+    /* -----------------------------------------------------
+       PREVIOUS BUTTON
+    ----------------------------------------------------- */
+
     if (previousButton) {
 
         previousButton.addEventListener(
@@ -298,7 +441,11 @@ function initializeCarousel(carousel) {
     }
 
 
-    // Next button.
+
+    /* -----------------------------------------------------
+       NEXT BUTTON
+    ----------------------------------------------------- */
+
     if (nextButton) {
 
         nextButton.addEventListener(
@@ -309,27 +456,33 @@ function initializeCarousel(carousel) {
     }
 
 
-    // Make sure the first slide is displayed.
+
+    // -----------------------------------------------------
+    // INITIAL STATE
+    // -----------------------------------------------------
+    //
+    // Always show the first picture when the page loads.
+    //
     showSlide(currentSlide);
 
 }
 
 
-/* =========================================================
-   5. INITIALIZE EVERY CAROUSEL
-   ========================================================= */
 
-// Find ALL carousels on the page.
+/* =========================================================
+   5. START ALL CAROUSELS
+   =========================================================
 //
-// querySelectorAll() is important here.
+// querySelectorAll() finds EVERY carousel on the page.
 //
-// querySelector() would only find the first one.
+// That means:
 //
-// querySelectorAll() finds:
-// - Before carousel
-// - After carousel
-// - Any future carousel we add later
+//     Before → gets its own controller
+//     After  → gets its own controller
 //
+// This is what makes the two carousels independent.
+// ========================================================= */
+
 document
     .querySelectorAll(".gallery-carousel")
     .forEach((carousel) => {
@@ -337,6 +490,7 @@ document
         initializeCarousel(carousel);
 
     });
+
 
 
 // =========================================================
